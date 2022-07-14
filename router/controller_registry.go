@@ -23,12 +23,6 @@ func (r *controllerRegistry) GetControllers() []Controller {
 	return r.controllers
 }
 
-var r *controllerRegistry
-
-func GetControllerRegistry() *controllerRegistry {
-	if r == nil {
-		r = &controllerRegistry{mu: sync.Mutex{}}
-	}
-
-	return r
+func NewControllerRegistry() *controllerRegistry {
+	return &controllerRegistry{mu: sync.Mutex{}}
 }
