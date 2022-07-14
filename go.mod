@@ -1,4 +1,4 @@
-module mediapire-common
+module github.com/egfanboy/mediapire-common
 
 go 1.16
 
