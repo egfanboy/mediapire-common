@@ -3,8 +3,9 @@ package router
 import (
 	"encoding/json"
 	"errors"
-	"mediapire-common/exceptions"
 	"net/http"
+
+	"github.com/egfanboy/mediapire-common/exceptions"
 )
 
 func prepareResponseBody(data interface{}, key *string) ([]byte, error) {
