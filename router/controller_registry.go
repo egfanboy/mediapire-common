@@ -6,12 +6,12 @@ type Controller interface {
 	GetApis() []RouteBuilder
 }
 
-type controllerRegistry struct {
+type ControllerRegistry struct {
 	mu          sync.Mutex
 	controllers []Controller
 }
 
-func (r *controllerRegistry) Register(c Controller) {
+func (r *ControllerRegistry) Register(c Controller) {
 	r.mu.Lock()
 
 	r.controllers = append(r.controllers, c)
@@ -19,10 +19,10 @@ func (r *controllerRegistry) Register(c Controller) {
 	r.mu.Unlock()
 }
 
-func (r *controllerRegistry) GetControllers() []Controller {
+func (r *ControllerRegistry) GetControllers() []Controller {
 	return r.controllers
 }
 
-func NewControllerRegistry() *controllerRegistry {
-	return &controllerRegistry{mu: sync.Mutex{}}
+func NewControllerRegistry() *ControllerRegistry {
+	return &ControllerRegistry{mu: sync.Mutex{}}
 }
