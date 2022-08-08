@@ -17,7 +17,9 @@ func prepareResponseBody(data interface{}, key *string) ([]byte, error) {
 
 	responseMap := make(map[string]interface{})
 
-	responseMap[bodyKey] = data
+	if data != nil {
+		responseMap[bodyKey] = data
+	}
 
 	response, err := json.Marshal(responseMap)
 
@@ -28,10 +30,10 @@ func prepareResponseBody(data interface{}, key *string) ([]byte, error) {
 	return response, nil
 }
 
-func sendError(w http.ResponseWriter, err error) {
+func sendError(w http.ResponseWriter, errToSend error) {
 	errorKey := "error"
 
-	response, err := prepareResponseBody(err.Error(), &errorKey)
+	response, err := prepareResponseBody(errToSend.Error(), &errorKey)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -39,7 +41,7 @@ func sendError(w http.ResponseWriter, err error) {
 		return
 	}
 
-	apiException, ok := err.(*exceptions.ApiException)
+	apiException, ok := errToSend.(*exceptions.ApiException)
 
 	httpCode := http.StatusInternalServerError
 

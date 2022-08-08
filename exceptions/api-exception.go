@@ -3,14 +3,19 @@ package exceptions
 import "net/http"
 
 type ApiException struct {
-	err        error
+	Err        error
 	StatusCode int
 }
 
 func (e ApiException) Error() string {
-	return e.err.Error()
+
+	if e.Err != nil {
+		return e.Err.Error()
+	}
+
+	return ""
 }
 
 func NewBadRequestException(cause error) *ApiException {
-	return &ApiException{err: cause, StatusCode: http.StatusBadRequest}
+	return &ApiException{Err: cause, StatusCode: http.StatusBadRequest}
 }
