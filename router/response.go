@@ -9,19 +9,17 @@ import (
 )
 
 func prepareResponseBody(data interface{}, key *string) ([]byte, error) {
-	bodyKey := "response"
 
 	if key != nil {
-		bodyKey = *key
+		responseMap := make(map[string]interface{})
+
+		if data != nil {
+			responseMap[*key] = data
+		}
+		data = responseMap
 	}
 
-	responseMap := make(map[string]interface{})
-
-	if data != nil {
-		responseMap[bodyKey] = data
-	}
-
-	response, err := json.Marshal(responseMap)
+	response, err := json.Marshal(data)
 
 	if err != nil {
 		return nil, errors.New("failed to marshal data to JSON")
