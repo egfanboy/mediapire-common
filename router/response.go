@@ -47,6 +47,8 @@ func sendError(w http.ResponseWriter, errToSend error) {
 		httpCode = apiException.StatusCode
 	}
 
+	w.Header().Set(contentType, "application/json")
+
 	w.WriteHeader(httpCode)
 	w.Write(response)
 }
