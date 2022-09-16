@@ -123,6 +123,12 @@ func (b RouteBuilder) Build(router *mux.Router) {
 	}
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		if r.Method == http.MethodOptions {
+			return
+		}
+
 		responseBody, err := (func() (i interface{}, err error) {
 			p := RouteParams{Params: mux.Vars(r)}
 
