@@ -125,6 +125,7 @@ func (b RouteBuilder) Build(router *mux.Router) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+		w.Header().Set("Access-Control-Allow-Method", "DELETE, GET, POST, PUT, PATCH")
 
 		if r.Method == http.MethodOptions {
 			return

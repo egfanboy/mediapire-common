@@ -12,9 +12,9 @@ const (
 )
 
 type TransferMessage struct {
-	Id       string                    `json:"id"`
-	TargetId uuid.UUID                 `json:"targetId"`
-	Inputs   map[uuid.UUID][]uuid.UUID `json:"inputs"`
+	Id       string                 `json:"id"`
+	TargetId uuid.UUID              `json:"targetId"`
+	Inputs   map[uuid.UUID][]string `json:"inputs"`
 }
 
 type TransferUpdateMessage struct {

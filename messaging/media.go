@@ -7,5 +7,5 @@ const (
 )
 
 type DeleteMediaMessage struct {
-	MediaToDelete map[uuid.UUID][]uuid.UUID
+	MediaToDelete map[uuid.UUID][]string
 }
