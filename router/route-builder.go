@@ -137,7 +137,7 @@ func (b RouteBuilder) Build(router *mux.Router) {
 		responseBody, err := (func() (i interface{}, err error) {
 			p := RouteParams{Params: mux.Vars(r)}
 
-			if r.Body != nil {
+			if r.Body != nil && r.Header.Get("Content-type") == "application/json" {
 				bBody, err := io.ReadAll(r.Body)
 				defer r.Body.Close()
 
