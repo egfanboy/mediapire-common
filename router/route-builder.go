@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,6 +30,10 @@ type RouteParams struct {
 
 func (p RouteParams) PopulateBody(target interface{}) error {
 	return json.Unmarshal(p.body, &target)
+}
+
+func MustGetQueryValue(p RouteParams, qp QueryParam) string {
+	return p.Params[qp.Name]
 }
 
 var dataTypeHandlers = map[dataType]DataHandler{
@@ -135,7 +138,7 @@ func (b RouteBuilder) Build(router *mux.Router) {
 			p := RouteParams{Params: mux.Vars(r)}
 
 			if r.Body != nil {
-				bBody, err := ioutil.ReadAll(r.Body)
+				bBody, err := io.ReadAll(r.Body)
 				defer r.Body.Close()
 
 				if err != nil {
@@ -171,31 +174,44 @@ func (b RouteBuilder) Build(router *mux.Router) {
 
 	path := fmt.Sprintf("/api/%s%s", b.apiVersion, b.path)
 
-	hasRequiredQuery := false
-	hasQuery := len(b.queryParams) > 0
+	if len(b.queryParams) > 0 {
+		/* 	Due to the nature of the mux package for a route that contains query parameters we attach a custom matcher.
+		* 	The custom matcher creates a dummy router and will try to match the request to the base URL of the route. If we have a match
+		* 	we will parse the query parameters from the URL and set them as the mux Vars. However, if the amount of query parameters exceeds
+		* 	the expected amount from the route we will not match it. This allows to have multiple handlers for the same route but with different execution
+		* 	paths based on the query parameters. Another check is if one of the required query parameters is not present we mark the route has NOT matched.
+		 */
+		router.HandleFunc(path, handler).Methods(b.methods...).MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
 
-	/* 	Due to the nature of the mux package we need to register a route twice if it has optional query params.
-	* 	Once for the route without any query params and once with the query so we can match in both scenarios.
-	* 	However, if the route has a required query param do not register the base route so the router will only match
-	*	if the param is provided
-	 */
-	if hasQuery {
-		for _, q := range b.queryParams {
-			if q.Required {
-				hasRequiredQuery = true
-				break
+			// dummy router that matches only the path of this API route.
+			internalRouter := mux.NewRouter().StrictSlash(true)
+
+			matched := internalRouter.Methods(b.methods...).
+				Name(fmt.Sprintf("%s-query-matcher", path)).
+				Path(path).
+				Match(r, rm)
+
+			if !matched {
+				return false
 			}
-		}
-	}
 
-	if hasQuery {
-		router.HandleFunc(path, handler).Methods(b.methods...).Queries(buildQuery(b.queryParams)...)
+			if len(r.URL.Query()) > len(b.queryParams) {
+				return false
+			}
 
-		if !hasRequiredQuery {
-			// all params optional, therefore allow matching the route without query params
-			router.HandleFunc(path, handler).Methods(b.methods...)
-		}
+			for _, qp := range b.queryParams {
+				// required query param is missing
+				if qp.Required && !r.URL.Query().Has(qp.Name) {
+					return false
+				}
 
+				if r.URL.Query().Has(qp.Name) {
+					rm.Vars[qp.Name] = r.URL.Query().Get(qp.Name)
+				}
+			}
+
+			return true
+		})
 	} else {
 		// no query param, just register the route
 		router.HandleFunc(path, handler).Methods(b.methods...)
