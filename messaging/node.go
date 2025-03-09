@@ -5,5 +5,5 @@ const (
 )
 
 type NodeReadyMessage struct {
-	NodeId string
+	Id, Name string
 }
